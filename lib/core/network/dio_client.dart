@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:pokemon_app_gravity/core/common/app_strings.dart';
 
 class DioClient {
   final Dio _dio;
@@ -12,7 +13,7 @@ class DioClient {
     try {
       return await _dio.get(url, queryParameters: queryParameters);
     } catch (e) {
-      throw Exception('Something went wrong!');
+      throw Exception(AppStrings.errorLoadingData);
     }
   }
 }

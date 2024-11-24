@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pokemon_app_gravity/core/common/widgets/loader.dart';
-import 'package:pokemon_app_gravity/core/theme/app_palette.dart';
 import 'package:pokemon_app_gravity/core/theme/text_theme.dart';
 import 'package:pokemon_app_gravity/data/models/pokemon_card.dart';
 import 'package:pokemon_app_gravity/presentation/pages/pokemon_detail_page.dart';
@@ -27,15 +26,18 @@ class PokemonCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Using SizedBox to control the size of the loader
-                  CachedNetworkImage(
-                    imageUrl: card.imageUrl,
-                    placeholder: (context, url) =>  const Loader(),
-                    errorWidget: (context, url, error) => const Icon(
-                      Icons.error,
-                      size: 60,
-                    ),
-                    fit: BoxFit.cover, // Ensure image fits and fills the area
-                  ),
+                  Flexible(
+                      flex: 1,
+                      child: CachedNetworkImage(
+                        imageUrl: card.imageUrl,
+                        placeholder: (context, url) => const Loader(),
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.error,
+                          size: 60,
+                        ),
+                        fit: BoxFit
+                            .cover, // Ensure image fits and fills the area
+                      )),
                   Text(
                     card.name,
                     style: customTextTheme.displaySmall,

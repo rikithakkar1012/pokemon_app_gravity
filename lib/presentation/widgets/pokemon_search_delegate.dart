@@ -1,20 +1,13 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pokemon_app_gravity/core/common/app_strings.dart';
 import 'package:pokemon_app_gravity/core/common/widgets/loader.dart';
 import 'package:pokemon_app_gravity/core/theme/text_theme.dart';
+import 'package:pokemon_app_gravity/core/utils/show_snackbar.dart';
 import 'package:pokemon_app_gravity/presentation/controllers/pokemon_controller.dart';
 import 'package:pokemon_app_gravity/presentation/widgets/pokemon_card_widget.dart';
 
 class PokemonSearchDelegate extends SearchDelegate {
-  final _debounceDuration =
-      const Duration(milliseconds: 500); // Adjust debounce interval
-  Timer? _debounceTimer;
-  bool _isThrottling = false; // Variable to handle throttling
-  final int _throttleDuration = 1000; // Throttle interval (1 second)
-
   final PokemonController controller = Get.find<PokemonController>();
 
   @override
@@ -36,6 +29,12 @@ class PokemonSearchDelegate extends SearchDelegate {
     return FutureBuilder(
       future: controller.getPokemonCardsBySet(query),
       builder: (context, snapshot) {
+        if (controller.errorMessage.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showSnackBar(context, controller.errorMessage.value);
+          });
+        }
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Loader();
         }
@@ -71,73 +70,58 @@ class PokemonSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Show search suggestions (optional)
+    // 1. Debounce: Cancel previous debounce timer
+    controller.debounceSearch(query);
 
-    // // 1. Debounce: Cancel previous debounce timer
-    // if (_debounceTimer?.isActive ?? false) {
-    //   _debounceTimer?.cancel();
-    // }
-    //
-    // // 2. Throttle: Prevent search until throttle duration has passed
-    // if (_isThrottling) {
-    //   return const Center(
-    //       child: CircularProgressIndicator()); // Show loading if throttled
-    // }
-    //
-    // //3. Start new debounce timer
-    // if (query.length >= 3) {
-    //   _debounceTimer = Timer(_debounceDuration, () {
-    //     if (!_isThrottling) {
-    //       print("Search for query: $query");
-    //       _throttleSearch(query);
-    //     }
-    //   });
-    // }
+    // 2. Throttle: Prevent search until throttle duration has passed
+    if (controller.isThrottling) {
+      return const Loader();
+    }
 
-    return FutureBuilder(
-      future: controller.searchPokemonCards(query),
-      // You can modify this to show filtered suggestions
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Loader();
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
-              child: Text(
-            AppStrings.noSuggestion,
-            style: customTextTheme.displaySmall,
-          ));
-        }
+    return Obx(() {
+      // Show any error message
+      if (controller.errorMessage.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showSnackBar(context, controller.errorMessage.value);
+        });
+      }
 
-        final cardsList = snapshot.data!;
+      // Show loading if still fetching
+      if (controller.isSearching.value) {
+        return const Loader();
+      }
 
-        // Used Set to avoid duplication in values
-        // Create a Set to hold unique set names or identifiers.
-        Set<String> uniqueSets = {};
-
-        // Extract unique set values from all the cards
-        for (var singleCard in cardsList) {
-          uniqueSets.add(
-              singleCard.set); // Assuming `card.set` is a string or identifier
-        }
-
-        return ListView.builder(
-          itemCount: uniqueSets.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(uniqueSets.elementAt(index)),
-              onTap: () {
-                query = uniqueSets
-                    .elementAt(index); // Set query to the selected suggestion
-                showResults(context); // Show results after tapping a suggestion
-
-                controller.getPokemonCardsBySet(query);
-              },
-            );
-          },
+      // Show no suggestions message if no data or empty search
+      if (controller.searchResults.isEmpty) {
+        return Center(
+          child: Text(AppStrings.noSuggestion,
+              style: customTextTheme.displaySmall),
         );
-      },
-    );
+      }
+
+      final cardsList = controller.searchResults;
+
+      // Used Set to avoid duplication in values (by set name)
+      Set<String> uniqueSets = {};
+      for (var singleCard in cardsList) {
+        uniqueSets.add(singleCard.set);
+      }
+
+      return ListView.builder(
+        itemCount: uniqueSets.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(uniqueSets.elementAt(index)),
+            onTap: () {
+              query = uniqueSets
+                  .elementAt(index); // Set query to the selected suggestion
+              showResults(context); // Show results after tapping a suggestion
+              controller.getPokemonCardsBySet(query);
+            },
+          );
+        },
+      );
+    });
   }
 
   @override
@@ -150,15 +134,5 @@ class PokemonSearchDelegate extends SearchDelegate {
             null); // Close the search bar when the back button is pressed
       },
     );
-  }
-
-  // Throttling logic to ensure the search query is triggered at a controlled rate
-  void _throttleSearch(String query) {
-    _isThrottling = true; // Start throttling
-    controller.searchPokemonCards(query); // Trigger the search
-    // Stop throttling after the throttle duration
-    Future.delayed(Duration(milliseconds: _throttleDuration), () {
-      _isThrottling = false; // Allow the next search after throttle period
-    });
   }
 }

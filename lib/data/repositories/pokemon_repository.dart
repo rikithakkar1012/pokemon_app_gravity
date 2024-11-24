@@ -1,5 +1,5 @@
 import 'package:pokemon_app_gravity/core/common/app_strings.dart';
-import 'package:pokemon_app_gravity/core/common/app_constants.dart';
+import 'package:pokemon_app_gravity/core/error/exception.dart';
 import 'package:pokemon_app_gravity/core/network/connection_checker.dart';
 import 'package:pokemon_app_gravity/data/datasources/pokemon_remote_datasource.dart';
 import 'package:pokemon_app_gravity/domain/repositories/pokemon_repository.dart';
@@ -23,7 +23,7 @@ class PokemonRepositoryImpl extends PokemonRepository {
       }
     } else {
       // If no internet, throw a custom error or return cached data
-      throw Exception(AppStrings.networkError);
+      throw const NetworkException(AppStrings.networkError);
     }
   }
 
@@ -32,13 +32,13 @@ class PokemonRepositoryImpl extends PokemonRepository {
     if (await connectionChecker.isConnected) {
       // If connected to the internet, make the API call
       try {
-        return apiService.fetchPokemonCardsBySet(Uri.encodeComponent(setName));
+        return apiService.fetchPokemonCardsBySet(Uri.encodeComponent(setName.trim()));
       } catch (e) {
         throw Exception("Error fetching data: $e");
       }
     } else {
       // If no internet, throw a custom error or return cached data
-      throw Exception(AppStrings.networkError);
+      throw const NetworkException(AppStrings.networkError);
     }
   }
 
@@ -47,13 +47,13 @@ class PokemonRepositoryImpl extends PokemonRepository {
     if (await connectionChecker.isConnected) {
       // If connected to the internet, make the API call
       try {
-        return apiService.searchPokemonCards(Uri.encodeComponent(query));
+        return apiService.searchPokemonCards(Uri.encodeComponent(query.trim()));
       } catch (e) {
         throw Exception("Error fetching data: $e");
       }
     } else {
       // If no internet, throw a custom error or return cached data
-      throw Exception(AppStrings.networkError);
+      throw const NetworkException(AppStrings.networkError);
     }
   }
 }

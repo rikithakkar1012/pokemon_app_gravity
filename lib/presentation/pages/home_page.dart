@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pokemon_app_gravity/core/common/app_strings.dart';
 import 'package:pokemon_app_gravity/core/common/widgets/loader.dart';
+import 'package:pokemon_app_gravity/core/utils/show_snackbar.dart';
 import 'package:pokemon_app_gravity/presentation/widgets/pokemon_search_delegate.dart';
-import '../../core/theme/app_palette.dart';
 import '../controllers/pokemon_controller.dart';
 import '../widgets/pokemon_card_widget.dart';
 
@@ -31,21 +29,13 @@ class HomePage extends StatelessWidget {
         () {
           if (controller.errorMessage.isNotEmpty) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(controller.errorMessage.value)),
-              );
+              showSnackBar(context, controller.errorMessage.value);
             });
           }
 
           if (controller.isLoading.value && controller.pokemonCards.isEmpty) {
             // Show the loading indicator if loading is true and there are no pokemon cards
-            return const Center(
-              child: SizedBox(
-                height: 40,
-                width: 40,
-                child: Loader(),
-              ),
-            );
+            return const Loader();
           } else {
             // Display GridView with Pokémon cards
             return GridView.builder(
@@ -71,7 +61,11 @@ class HomePage extends StatelessWidget {
               itemBuilder: (context, index) {
                 if (index == controller.pokemonCards.length) {
                   // Show the loading spinner at the bottom when more cards are being loaded
-                  return const Loader();
+                  if (controller.pokemonCards.isNotEmpty) {
+                    return const Loader();
+                  } else {
+                    return const SizedBox();
+                  }
                 }
 
                 final card = controller.pokemonCards[index];

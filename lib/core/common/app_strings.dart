@@ -11,5 +11,5 @@ class AppStrings {
   static const String errorLoadingData =
       'Failed to search Pokémon cards';
   static const String networkError =
-      'Network error. Please check your connection.';
+      'Please check your network connection.';
 }
