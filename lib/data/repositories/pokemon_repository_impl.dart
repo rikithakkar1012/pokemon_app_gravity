@@ -7,17 +7,17 @@ import 'package:pokemon_app_gravity/domain/repositories/pokemon_repository.dart'
 import '../models/pokemon_card.dart';
 
 class PokemonRepositoryImpl extends PokemonRepository {
-  final PokemonRemoteDataSource apiService;
+  final PokemonRemoteDataSource remoteDataSource;
   final ConnectionChecker connectionChecker;
 
-  PokemonRepositoryImpl(this.apiService, this.connectionChecker);
+  PokemonRepositoryImpl(this.remoteDataSource, this.connectionChecker);
 
   @override
-  Future<List<PokemonCard>> fetchPokemonCards(int page, int pageSize) async {
+  Future<List<PokemonCard>> getPokemonCardsByPage(int page, int pageSize) async {
     if (await connectionChecker.isConnected) {
       // If connected to the internet, make the API call
       try {
-        return await apiService.fetchPokemonCards(page, pageSize);
+        return await remoteDataSource.getPokemonCardsByPage(page, pageSize);
       } catch (e) {
         throw Exception("Error fetching data: $e");
       }
@@ -32,7 +32,7 @@ class PokemonRepositoryImpl extends PokemonRepository {
     if (await connectionChecker.isConnected) {
       // If connected to the internet, make the API call
       try {
-        return apiService.fetchPokemonCardsBySet(Uri.encodeComponent(setName.trim()));
+        return remoteDataSource.getPokemonCardsBySet(Uri.encodeComponent(setName.trim()));
       } catch (e) {
         throw Exception("Error fetching data: $e");
       }
@@ -47,7 +47,7 @@ class PokemonRepositoryImpl extends PokemonRepository {
     if (await connectionChecker.isConnected) {
       // If connected to the internet, make the API call
       try {
-        return apiService.searchPokemonCards(Uri.encodeComponent(query.trim()));
+        return remoteDataSource.searchPokemonCards(Uri.encodeComponent(query.trim()));
       } catch (e) {
         throw Exception("Error fetching data: $e");
       }

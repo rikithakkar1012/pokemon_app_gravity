@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:pokemon_app_gravity/data/models/pokemon_card.dart';
-import 'package:pokemon_app_gravity/domain/usecases/get_pokemon_cards.dart';
+import 'package:pokemon_app_gravity/domain/usecases/get_pokemon_cards_by_page.dart';
+import 'package:pokemon_app_gravity/domain/usecases/get_pokemon_cards_by_query.dart';
 
 class PokemonController extends GetxController {
-  final GetPokemonCardsUseCase getPokemonCardsUseCase;
+  final GetPokemonCardsByPageUseCase getPokemonCardsByPageUseCase;
 
-  PokemonController(this.getPokemonCardsUseCase);
+  final GetPokemonCardsByQueryUseCase getPokemonCardsByQueryUseCase;
+
+
+  PokemonController(this.getPokemonCardsByPageUseCase, this.getPokemonCardsByQueryUseCase);
 
   var isLoading = false.obs;
   var pokemonCards = <PokemonCard>[].obs;
@@ -35,7 +39,7 @@ class PokemonController extends GetxController {
     try {
       isLoading.value = true; // Start loading
 
-      final cards = await getPokemonCardsUseCase.execute(page: page);
+      final cards = await getPokemonCardsByPageUseCase.getPokemonCardsByPage(page: page);
       if (page == 1) {
         pokemonCards.value = cards;
       } else {
@@ -51,7 +55,7 @@ class PokemonController extends GetxController {
 
   Future<List<PokemonCard>> getPokemonCardsBySet(String query) async {
     try {
-      return await getPokemonCardsUseCase.getPokemonCardsBySet(query);
+      return await getPokemonCardsByQueryUseCase.getPokemonCardsBySet(query);
     } catch (e) {
       errorMessage.value = e.toString();
       return [];
@@ -61,7 +65,7 @@ class PokemonController extends GetxController {
   void searchPokemonCards(String query) async {
     try {
       isSearching.value = true;
-      final cards = await getPokemonCardsUseCase.searchPokemonCards(query);
+      final cards = await getPokemonCardsByQueryUseCase.searchPokemonCards(query);
       searchResults.clear();
       searchResults.value = cards;
     } catch (e) {

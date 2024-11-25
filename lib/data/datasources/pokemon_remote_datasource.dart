@@ -8,7 +8,7 @@ class PokemonRemoteDataSource {
 
   PokemonRemoteDataSource(this.dio);
 
-  Future<List<PokemonCard>> fetchPokemonCards(int page, int pageSize) async {
+  Future<List<PokemonCard>> getPokemonCardsByPage(int page, int pageSize) async {
     final response = await dio.get(
       AppConstants.apiBaseUrl,
       queryParameters: {'page': page, 'pageSize': pageSize},
@@ -23,7 +23,7 @@ class PokemonRemoteDataSource {
     }
   }
 
-  Future<List<PokemonCard>> fetchPokemonCardsBySet(String setName) async {
+  Future<List<PokemonCard>> getPokemonCardsBySet(String setName) async {
     final response = await dio.get(AppConstants.apiBaseUrl,
         queryParameters: {'q': 'set.name:$setName'});
 

@@ -7,7 +7,9 @@ class Loader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-        child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppPalette.primaryDark)));
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(AppPalette.primaryDark),
+      ),
+    );
   }
 }
